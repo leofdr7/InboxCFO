@@ -1,0 +1,5 @@
+[functions.extract-invoice]
+verify_jwt = false
+
+[functions.evaluate-risk]
+verify_jwt = false

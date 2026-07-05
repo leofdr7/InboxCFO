@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "feature/**"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    name: Node checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate JavaScript syntax
+        run: npm run check:js
+
+  deno:
+    name: Optional Supabase Edge Function checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect Supabase Edge Functions
+        id: edge-functions
+        run: |
+          if [ -d supabase/functions ] && [ -n "$(find supabase/functions -name '*.ts' -print -quit)" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Deno
+        if: steps.edge-functions.outputs.present == 'true'
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Check formatting
+        if: steps.edge-functions.outputs.present == 'true'
+        run: deno fmt --check supabase/functions
+
+      - name: Lint functions
+        if: steps.edge-functions.outputs.present == 'true'
+        run: deno lint supabase/functions
+
+      - name: Type-check functions
+        if: steps.edge-functions.outputs.present == 'true'
+        run: deno check $(find supabase/functions -name '*.ts' -print)

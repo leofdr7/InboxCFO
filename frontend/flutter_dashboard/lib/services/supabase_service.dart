@@ -25,7 +25,8 @@ class SupabaseService {
 
   Stream<List<Alert>> get alertsStream => _alertsController.stream;
 
-  bool get useMock => AppConfig.useMockData || !SupabaseConfig.isConfigured;
+  bool get useMock => AppConfig.useMockData;
+  bool get isSupabaseConfigured => SupabaseConfig.isConfigured;
 
   Future<void> initialize() async {
     if (useMock) {
@@ -35,6 +36,8 @@ class SupabaseService {
       _mockInvoices = List.from(MockData.invoices);
       return;
     }
+
+    if (!isSupabaseConfigured) return;
 
     await Supabase.initialize(
       url: SupabaseConfig.url,

@@ -7,6 +7,7 @@ import '../models/account_balance.dart';
 import '../models/alert.dart';
 import '../models/cash_projection.dart';
 import '../models/invoice.dart';
+import '../services/auth_service.dart';
 import '../services/ingestion_service.dart';
 import '../services/supabase_service.dart';
 import '../widgets/alert_banner.dart';
@@ -167,6 +168,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             tooltip: 'Actualizar',
             onPressed: _loading ? null : _loadDashboard,
           ),
+          if (!_service.useMock)
+            IconButton(
+              icon: const Icon(Icons.logout_rounded),
+              tooltip: 'Cerrar sesión',
+              onPressed: () async => AuthService.instance.signOut(),
+            ),
           const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: _ingesting ? null : _simulateIngestion,

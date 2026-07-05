@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'screens/dashboard_screen.dart';
+import 'screens/auth_gate.dart';
 import 'services/supabase_service.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
@@ -29,7 +29,7 @@ class InboxCfoApp extends StatelessWidget {
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
           themeMode: ThemeController.instance.themeMode,
-          home: const DashboardScreen(),
+          home: const AuthGate(),
         );
       },
     );

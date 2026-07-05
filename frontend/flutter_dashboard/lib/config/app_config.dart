@@ -1,0 +1,20 @@
+/// Configuración general de la app.
+class AppConfig {
+  /// `true` por defecto: desarrollo frontend sin depender de Supabase.
+  /// Cuando el equipo suba credenciales/esquema al repo, pasa
+  /// `--dart-define=USE_MOCK_DATA=false` para conectar a Supabase.
+  static const bool useMockData = bool.fromEnvironment(
+    'USE_MOCK_DATA',
+    defaultValue: true,
+  );
+  /// Endpoint para simular ingesta de correo (n8n o project-cashflow).
+  /// Pásalo con --dart-define=INGESTION_ENDPOINT=https://...
+  static const String ingestionEndpoint = String.fromEnvironment(
+    'INGESTION_ENDPOINT',
+    defaultValue: '',
+  );
+
+  static const double riskThreshold = 0.0;
+  static const int projectionDays = 30;
+  static const int recentInvoicesLimit = 10;
+}

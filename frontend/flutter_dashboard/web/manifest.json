@@ -1,0 +1,11 @@
+{
+    "name": "InboxCFO Dashboard",
+    "short_name": "InboxCFO",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#F4F6F5",
+    "theme_color": "#1B4D3E",
+    "description": "Dashboard financiero de InboxCFO",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false
+}

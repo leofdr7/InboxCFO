@@ -11,7 +11,7 @@
     "seed:demo": "node seed-demo.js",
     "project:cashflow": "node backend/cloud_functions/project-cashflow.js",
     "check:js": "node --check seed-demo.js && node --check backend/cloud_functions/project-cashflow.js",
-    "check:env": "node -e \"['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY'].forEach((key)=>{if(!process.env[key]){console.error('Missing '+key);process.exitCode=1}})\""
+    "check:env": "node -r dotenv/config -e \"['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY'].forEach((key)=>{if(!process.env[key]){console.error('Missing '+key);process.exitCode=1}})\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",

@@ -7,7 +7,13 @@
 .buildlog/
 .history
 
-
+# Local environment and dependencies
+.env
+.env.*
+node_modules/
+supabase/.temp/
+supabase/functions/.env
+supabase/functions/.env.*
 
 # Flutter repo-specific
 /bin/cache/
@@ -72,7 +78,7 @@ unlinked_spec.ds
 **/ios/**/Pods/
 **/ios/**/.symlinks/
 **/ios/**/profile
-**/ios/**/xcuserdata
+**/ios/**/xcuserdata/
 **/ios/.generated/
 **/ios/Flutter/.last_build_id
 **/ios/Flutter/App.framework
@@ -116,7 +122,4 @@ app.*.symbols
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
-!/dev/ci/**/Gemfile.lock.env
-node_modules/
-
-.env
+!/dev/ci/**/Gemfile.lock

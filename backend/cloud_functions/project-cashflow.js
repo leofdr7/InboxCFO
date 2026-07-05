@@ -55,11 +55,31 @@ function calculateRiskLevel(projectedBalance) {
   return 'low';
 }
 
+function severityForRiskLevel(riskLevel) {
+  if (riskLevel === 'high') {
+    return 'critical';
+  }
+
+  if (riskLevel === 'medium') {
+    return 'warning';
+  }
+
+  return 'info';
+}
+
+function normalizeAlertSeverity(severity) {
+  if (severity === 'critical' || severity === 'warning' || severity === 'info') {
+    return severity;
+  }
+
+  return severityForRiskLevel(severity);
+}
+
 async function fetchRiskEvaluation(payload) {
   if (!RISK_ENDPOINT) {
     return {
       should_alert: payload.risk_level !== 'low',
-      severity: payload.risk_level,
+      severity: severityForRiskLevel(payload.risk_level),
       message: `Projected balance risk on ${payload.projection_date}: $${payload.projected_balance.toFixed(2)}.`,
     };
   }
@@ -191,7 +211,7 @@ async function maybeCreateAlert(supabase, projection, invoicesDue) {
 
   const alert = {
     alert_date: projection.projection_date,
-    severity: evaluation?.severity ?? projection.risk_level,
+    severity: normalizeAlertSeverity(evaluation?.severity ?? projection.risk_level),
     message:
       evaluation?.message ??
       `Projected ${projection.risk_level} cash-flow risk: $${payload.projected_balance.toFixed(2)} balance.`,

@@ -11,11 +11,19 @@ class IngestionService {
 
   Future<IngestionResult> simulateEmailIngestion() async {
     // Modo frontend: simula ingesta localmente sin endpoint ni Supabase.
-    if (AppConfig.useMockData || !isConfigured) {
+    if (AppConfig.useMockData) {
       await SupabaseService.instance.simulateMockIngestion();
       return const IngestionResult(
         success: true,
         message: 'Ingesta simulada (modo demo local)',
+      );
+    }
+
+    if (!isConfigured) {
+      return const IngestionResult(
+        success: false,
+        message:
+            'Configura INGESTION_ENDPOINT para ejecutar project-cashflow con Supabase.',
       );
     }
 

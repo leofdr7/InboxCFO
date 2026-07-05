@@ -49,27 +49,29 @@ lib/
 
 Edita `lib/data/mock_data.dart` para cambiar balance, proyecciones, facturas y alertas iniciales mientras diseñas la UI.
 
-## Conectar Supabase (cuando el equipo lo tenga listo)
+## Conectar Supabase
 
-Cuando lleguen credenciales y esquema al repo:
+El backend de datos ya vive en la raíz del repo:
+
+1. En Supabase SQL Editor, ejecuta `database/schema/schema.sql`.
+2. Luego ejecuta `database/seed/seed.sql`.
+3. Desde la raíz del repo, configura `.env` con `.env.example` y corre `npm run project:cashflow` para llenar `cash_projections` y `alerts`.
+4. Inicia el dashboard con tus credenciales públicas de Supabase:
 
 ```bash
-flutter run -d chrome ^
-  --dart-define=USE_MOCK_DATA=false ^
-  --dart-define=SUPABASE_URL=https://TU_PROYECTO.supabase.co ^
-  --dart-define=SUPABASE_ANON_KEY=tu_anon_key
+flutter run -d chrome --dart-define=USE_MOCK_DATA=false --dart-define=SUPABASE_URL=https://TU_PROYECTO.supabase.co --dart-define=SUPABASE_ANON_KEY=tu_anon_key
 ```
 
 También habilita Realtime en la tabla `alerts` en Supabase Dashboard → Database → Replication.
 
 El código de conexión ya está en `lib/services/supabase_service.dart` — no hay que reescribir el frontend.
 
-## Endpoint de ingesta (cuando exista)
+## Endpoint de ingesta / proyección
+
+El botón de ingesta mantiene el modo demo local cuando `USE_MOCK_DATA=true`. En modo Supabase real, configura un endpoint que ejecute `backend/cloud_functions/project-cashflow.js`:
 
 ```bash
-flutter run -d chrome ^
-  --dart-define=USE_MOCK_DATA=false ^
-  --dart-define=INGESTION_ENDPOINT=https://tu-webhook.com/ingest
+flutter run -d chrome --dart-define=USE_MOCK_DATA=false --dart-define=SUPABASE_URL=https://TU_PROYECTO.supabase.co --dart-define=SUPABASE_ANON_KEY=tu_anon_key --dart-define=INGESTION_ENDPOINT=https://tu-endpoint/project-cashflow
 ```
 
 ## Checklist frontend
@@ -78,4 +80,5 @@ flutter run -d chrome ^
 - [ ] Dashboard carga con `flutter run -d chrome` (sin flags)
 - [ ] Gráfico y KPIs se ven bien
 - [ ] Botón ingesta agrega alerta + factura en vivo
-- [ ] (Después) Conectar Supabase cuando el equipo lo suba al git
+- [ ] Conectar Supabase con `USE_MOCK_DATA=false`
+- [ ] Ejecutar `npm run project:cashflow` para poblar proyecciones y alertas

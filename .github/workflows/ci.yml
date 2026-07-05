@@ -56,12 +56,12 @@ jobs:
 
       - name: Check formatting
         if: steps.edge-functions.outputs.present == 'true'
-        run: deno fmt --check supabase/functions
+        run: deno fmt --check --config supabase/functions/deno.json supabase/functions
 
       - name: Lint functions
         if: steps.edge-functions.outputs.present == 'true'
-        run: deno lint supabase/functions
+        run: deno lint --config supabase/functions/deno.json supabase/functions
 
       - name: Type-check functions
         if: steps.edge-functions.outputs.present == 'true'
-        run: deno check $(find supabase/functions -name '*.ts' -print)
+        run: deno check --config supabase/functions/deno.json $(find supabase/functions -name '*.ts' -print)

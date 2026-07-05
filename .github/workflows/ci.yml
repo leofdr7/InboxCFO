@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches:
+      - main
       - develop
       - "feature/**"
   pull_request:
@@ -11,8 +12,27 @@ permissions:
   contents: read
 
 jobs:
-  checks:
-    name: Repository checks
+  node:
+    name: Node checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate JavaScript syntax
+        run: npm run check:js
+
+  deno:
+    name: Optional Supabase Edge Function checks
     runs-on: ubuntu-latest
 
     steps:

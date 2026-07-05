@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'screens/auth_gate.dart';
+import 'services/gmail_connect_service.dart';
 import 'services/supabase_service.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
@@ -11,6 +12,7 @@ Future<void> main() async {
   await initializeDateFormatting('es', null);
 
   await SupabaseService.instance.initialize();
+  GmailConnectService.instance.startListening();
 
   runApp(const InboxCfoApp());
 }

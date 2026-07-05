@@ -8,6 +8,7 @@ import '../models/alert.dart';
 import '../models/cash_projection.dart';
 import '../models/invoice.dart';
 import '../services/auth_service.dart';
+import '../services/gmail_connect_service.dart';
 import '../services/ingestion_service.dart';
 import '../services/supabase_service.dart';
 import '../widgets/alert_banner.dart';
@@ -26,6 +27,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final _service = SupabaseService.instance;
   final _ingestion = IngestionService.instance;
+  final _gmail = GmailConnectService.instance;
 
   AccountBalance? _balance;
   List<CashProjection> _projections = [];
@@ -33,6 +35,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Alert> _alerts = [];
   bool _loading = true;
   bool _ingesting = false;
+  bool _connectingGmail = false;
+  bool _gmailConnected = false;
   String? _error;
   bool _bannerDismissed = false;
 
@@ -42,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     _loadDashboard();
+    _refreshGmailStatus();
     _alertsSub = _service.alertsStream.listen((alerts) {
       if (mounted) {
         setState(() {
@@ -88,6 +93,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _error = e.toString();
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _refreshGmailStatus() async {
+    if (_service.useMock) return;
+    final connected = await _gmail.hasActiveConnection();
+    if (mounted) setState(() => _gmailConnected = connected);
+  }
+
+  Future<void> _connectGmail() async {
+    setState(() => _connectingGmail = true);
+
+    final result = await _gmail.connectGmail();
+
+    if (!mounted) return;
+
+    setState(() => _connectingGmail = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.message),
+        backgroundColor: result.success ? Colors.green.shade700 : Colors.red.shade700,
+      ),
+    );
+
+    if (result.success) {
+      await _refreshGmailStatus();
     }
   }
 
@@ -151,6 +183,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ? Colors.orange.shade900.withValues(alpha: 0.4)
                     : Colors.orange.shade100,
               ),
+            ),
+          if (!_service.useMock)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: _gmailConnected
+                  ? Chip(
+                      avatar: Icon(Icons.mark_email_read, size: 16, color: Colors.green.shade700),
+                      label: const Text('Gmail conectado', style: TextStyle(fontSize: 11)),
+                      backgroundColor: Colors.green.shade50,
+                    )
+                  : OutlinedButton.icon(
+                      onPressed: _connectingGmail ? null : _connectGmail,
+                      icon: _connectingGmail
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.link, size: 16),
+                      label: const Text('Conectar Gmail'),
+                    ),
             ),
           IconButton(
             icon: Icon(

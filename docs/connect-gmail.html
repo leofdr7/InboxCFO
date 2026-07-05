@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InboxCFO — Conectar Gmail</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 520px; margin: 48px auto; padding: 24px; }
+    button { padding: 12px 20px; font-size: 16px; cursor: pointer; }
+    #status { margin-top: 16px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Conectar Gmail a InboxCFO</h1>
+  <p>Guarda OAuth en <code>gmail_connections</code> para que n8n lea tu bandeja.</p>
+  <button id="connect">Conectar Gmail</button>
+  <div id="status"></div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
+
+    const SUPABASE_URL = 'https://mekiggiufacrkwjgyfjq.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1la2lnZ2l1ZmFjcmt3amd5ZmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNDQ1MDMsImV4cCI6MjA5MjcyMDUwM30.p0wo2ePyjX8Q9vVJ3LzjJb77B1PZg8-hAy-oZ5FFJ80';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const statusEl = document.getElementById('status');
+
+    function setStatus(msg) {
+      statusEl.textContent = msg;
+    }
+
+    async function persistSession(session) {
+      const { provider_token, provider_refresh_token, user, expires_at } = session;
+      if (!provider_token) {
+        setStatus('Sin provider_token. Inicia sesión con Google usando el botón.');
+        return;
+      }
+      if (!provider_refresh_token) {
+        setStatus('Sin refresh_token. Cierra sesión en Google y vuelve a conectar con consent.');
+        return;
+      }
+
+      const tokenExpiresAt = expires_at
+        ? new Date(expires_at * 1000).toISOString()
+        : new Date(Date.now() + 3600 * 1000).toISOString();
+
+      const { error } = await supabase.from('gmail_connections').upsert(
+        {
+          user_id: user.id,
+          email_address: user.email,
+          access_token: provider_token,
+          refresh_token: provider_refresh_token,
+          token_expires_at: tokenExpiresAt,
+          is_active: true,
+        },
+        { onConflict: 'user_id,email_address' },
+      );
+
+      if (error) {
+        setStatus('Error guardando gmail_connections: ' + error.message);
+        return;
+      }
+
+      setStatus('Listo. Gmail conectado para ' + user.email + '\nActiva el workflow en n8n.');
+    }
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+        await persistSession(session);
+      }
+    });
+
+    document.getElementById('connect').addEventListener('click', async () => {
+      setStatus('Redirigiendo a Google...');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          scopes: 'https://www.googleapis.com/auth/gmail.readonly',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+          redirectTo: window.location.origin + window.location.pathname,
+        },
+      });
+      if (error) setStatus('Error OAuth: ' + error.message);
+    });
+
+    const { data } = await supabase.auth.getSession();
+    if (data.session) await persistSession(data.session);
+  </script>
+</body>
+</html>
